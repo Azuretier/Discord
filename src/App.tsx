@@ -1,13 +1,18 @@
 import { useState, useEffect } from 'react'
 import { useKV } from '@github/spark/hooks'
 import { motion } from 'framer-motion'
-import { Book, Gear, Users, Plug, User } from '@phosphor-icons/react'
+import { Book, Gear, Users, Plug, User, Sparkle } from '@phosphor-icons/react'
 import { Button } from '@/components/ui/button'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { toast, Toaster } from 'sonner'
 import { ProfileCard } from '@/components/ProfileCard'
 import { RulesDialog } from '@/components/RulesDialog'
 import { RoleCustomizer } from '@/components/RoleCustomizer'
+import { AIInsights } from '@/components/AIInsights'
+import { AIRoleRecommender } from '@/components/AIRoleRecommender'
+import { AIRulesAssistant } from '@/components/AIRulesAssistant'
+import { AIProfileSummary } from '@/components/AIProfileSummary'
+import { AIActivityAnalyzer } from '@/components/AIActivityAnalyzer'
 import type { UserProfile, ServerRole, Rule } from '@/lib/types'
 import { calculateLevel, getRankForLevel } from '@/lib/types'
 
@@ -198,6 +203,13 @@ function App() {
     }))
   }
 
+  const handleAddRole = (roleId: string) => {
+    setProfile(current => ({
+      ...current!,
+      roles: [...current!.roles, roleId]
+    }))
+  }
+
   const handleReconnectBot = () => {
     toast.loading('Reconnecting to Discord bot...', { duration: 2000 })
     setTimeout(() => {
@@ -234,15 +246,18 @@ function App() {
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
-              <div className="p-3 rounded-xl bg-primary/10 border-2 border-primary/30">
+              <div className="p-3 rounded-xl bg-primary/10 border-2 border-primary/30 relative">
                 <Users className="h-8 w-8 text-primary" weight="fill" />
+                <div className="absolute -top-1 -right-1 p-1 rounded-full bg-accent/20 border border-accent">
+                  <Sparkle className="h-3 w-3 text-accent" weight="fill" />
+                </div>
               </div>
               <div>
                 <h1 className="text-4xl font-bold tracking-tight">
                   Azure Community
                 </h1>
                 <p className="text-muted-foreground">
-                  Member Profile Dashboard
+                  AI-Powered Member Hub
                 </p>
               </div>
             </div>
@@ -277,6 +292,14 @@ function App() {
               <User className="h-4 w-4" />
               Profile
             </TabsTrigger>
+            <TabsTrigger value="ai-tools" className="gap-2 relative">
+              <Sparkle className="h-4 w-4" weight="fill" />
+              AI Tools
+              <span className="absolute -top-1 -right-1 flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-accent opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-accent"></span>
+              </span>
+            </TabsTrigger>
             <TabsTrigger value="roles" className="gap-2">
               <Gear className="h-4 w-4" />
               Customize Roles
@@ -302,6 +325,22 @@ function App() {
                 <span className="font-semibold" style={{ color: 'oklch(0.60 0.20 290)' }}> Legendary</span>.
               </p>
             </motion.div>
+          </TabsContent>
+
+          <TabsContent value="ai-tools" className="space-y-6">
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <AIInsights profile={profile} />
+              <AIActivityAnalyzer profile={profile} />
+              <AIProfileSummary profile={profile} availableRoles={MOCK_ROLES} />
+              <AIRoleRecommender 
+                profile={profile} 
+                availableRoles={MOCK_ROLES}
+                onAddRole={handleAddRole}
+              />
+              <div className="lg:col-span-2">
+                <AIRulesAssistant rules={MOCK_RULES} />
+              </div>
+            </div>
           </TabsContent>
 
           <TabsContent value="roles" className="space-y-6">
