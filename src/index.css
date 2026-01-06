@@ -124,15 +124,15 @@
   box-shadow: 
     0 0 10px #ff00ff,
     0 0 20px #00ffff,
-    0 0 30px #ffff00;
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+    opacity: 1;
+  }
 }
 
-.retro-card {
-  background: linear-gradient(135deg, #fff 0%, #f0f0ff 50%, #fff 100%);
-  border: 3px outset #9999ff !important;
-  box-shadow: 
-    5px 5px 0px #ff00ff,
-    10px 10px 0px #00ffff;
 }
 
 .font-mono {
