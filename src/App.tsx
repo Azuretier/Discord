@@ -1,5 +1,4 @@
 import { useState, useEffect } from 'react'
-import { useKV } from '@github/spark/hooks'
 import { motion, AnimatePresence } from 'framer-motion'
 import { 
   ShieldCheck, 
@@ -32,6 +31,27 @@ export interface RuleProgress {
   quizScore: number | null
   quizAttempts: number
   mastered: boolean
+}
+
+function useKV<T>(key: string, initialValue: T): [T, (value: T | ((prev: T) => T)) => void] {
+  const [state, setState] = useState<T>(() => {
+    try {
+      const item = localStorage.getItem(key)
+      return item ? JSON.parse(item) : initialValue
+    } catch {
+      return initialValue
+    }
+  })
+
+  useEffect(() => {
+    try {
+      localStorage.setItem(key, JSON.stringify(state))
+    } catch {
+      console.error('Failed to save to localStorage')
+    }
+  }, [key, state])
+
+  return [state, setState]
 }
 
 function App() {
