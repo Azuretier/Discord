@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef } from 'react'
 
 /**
  * Custom hook for persisting state to localStorage
@@ -20,13 +20,16 @@ export function useKV<T>(key: string, initialValue: T): [T, (value: T | ((prev: 
     }
   })
 
+  // Use ref to track last serialized value to avoid redundant localStorage reads
+  const lastSerializedRef = useRef<string>()
+
   useEffect(() => {
     try {
       const serialized = JSON.stringify(state)
       // Only write to localStorage if the value has actually changed
-      const currentValue = localStorage.getItem(key)
-      if (currentValue !== serialized) {
+      if (lastSerializedRef.current !== serialized) {
         localStorage.setItem(key, serialized)
+        lastSerializedRef.current = serialized
       }
     } catch {
       console.error('Failed to save to localStorage')

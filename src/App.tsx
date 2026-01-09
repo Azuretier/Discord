@@ -30,6 +30,8 @@ export interface RuleProgress {
   mastered: boolean
 }
 
+type TabValue = 'learn' | 'quiz' | 'progress' | 'reference'
+
 function App() {
   const [progress, setProgress] = useKV<RuleProgress[]>('rule-progress', 
     RULES.map(rule => ({
@@ -42,7 +44,7 @@ function App() {
   )
   
   const [currentRuleIndex, setCurrentRuleIndex] = useKV<number>('current-rule-index', 0)
-  const [activeTab, setActiveTab] = useState<'learn' | 'quiz' | 'progress' | 'reference'>('learn')
+  const [activeTab, setActiveTab] = useState<TabValue>('learn')
   const [showConfetti, setShowConfetti] = useState(false)
   const [totalPoints, setTotalPoints] = useKV<number>('total-points', 0)
 
@@ -208,7 +210,7 @@ function App() {
           </Card>
         </motion.header>
 
-        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as 'learn' | 'quiz' | 'progress' | 'reference')} className="space-y-6">
+        <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as TabValue)} className="space-y-6">
           <TabsList className="grid w-full grid-cols-4 h-auto p-1.5 bg-muted/50 border border-border/50 backdrop-blur-sm">
             <TabsTrigger value="learn" className="gap-2 py-3 font-medium data-[state=active]:bg-card data-[state=active]:shadow-sm">
               <Books className="h-4 w-4" weight="duotone" />
