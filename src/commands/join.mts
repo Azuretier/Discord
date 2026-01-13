@@ -64,10 +64,9 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 		await interaction.deferReply({ ephemeral: true });
 
 		// Create private text channel for communication
-		const privateChannel = await interaction.guild.channels.create({
+		const channelOptions: any = {
 			name: `join-request-${interaction.user.username}`,
 			type: ChannelType.GuildText,
-			parent: PRIVATE_CATEGORY_ID || undefined,
 			permissionOverwrites: [
 				{
 					id: interaction.guild.id,
@@ -90,7 +89,13 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 					],
 				}] : []),
 			],
-		});
+		};
+
+		if (PRIVATE_CATEGORY_ID) {
+			channelOptions.parent = PRIVATE_CATEGORY_ID;
+		}
+
+		const privateChannel = await interaction.guild.channels.create(channelOptions) as TextChannel;
 
 		// Create button that only admin can click
 		const approveButton = new ActionRowBuilder<ButtonBuilder>().addComponents(
