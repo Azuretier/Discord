@@ -29,7 +29,7 @@ export function RankCardPage() {
     const decodedName = decodeURIComponent(user_discord_display_name);
     const normalizedName = decodedName.trim().normalize('NFKC');
 
-    let pollInterval: ReturnType<typeof setInterval>;
+    let pollInterval: ReturnType<typeof setInterval> | undefined;
 
     async function loadRankCard() {
       try {
@@ -65,7 +65,7 @@ export function RankCardPage() {
     loadRankCard();
 
     return () => {
-      if (pollInterval) {
+      if (pollInterval !== undefined) {
         clearInterval(pollInterval);
       }
     };
