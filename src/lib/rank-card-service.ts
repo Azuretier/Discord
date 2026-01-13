@@ -1,5 +1,5 @@
 import type { RankCardData, Member, MemberCandidate } from './rank-card-types';
-import { calculateLevel, getRankForLevel, type RankTier } from './types';
+import { calculateLevel, getRankForLevel } from './types';
 
 // Mock member data - in a real app, this would come from Firestore or a database
 const mockMembers: Record<string, Member[]> = {};
