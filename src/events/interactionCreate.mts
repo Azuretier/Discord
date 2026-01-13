@@ -1,9 +1,124 @@
 // src/events/interactionCreate.ts 内の処理
 import type { Interaction, TextChannel } from 'discord.js';
 import { dbService  } from '../lib/db-service.js';
-import { ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder, EmbedBuilder } from 'discord.js';
+import { ModalBuilder, TextInputBuilder, TextInputStyle, ActionRowBuilder, EmbedBuilder, ChannelType } from 'discord.js';
 
 export const handleExecution = async (interaction: Interaction) => {
+    // Approve join button - only admin can click
+    if (interaction.isButton() && interaction.customId.startsWith('approve_join_')) {
+        const ADMIN_USER_ID = ''; // Same as in join.mts
+        const TARGET_VOICE_CHANNEL_ID = ''; // Same as in join.mts
+        
+        if (ADMIN_USER_ID && interaction.user.id !== ADMIN_USER_ID) {
+            await interaction.reply({
+                content: '❌ このボタンは管理者のみが使用できます。',
+                ephemeral: true
+            });
+            return;
+        }
+
+        const parts = interaction.customId.split('_');
+        const userId = parts[2];
+        const currentVCId = parts[3];
+
+        try {
+            const guild = interaction.guild;
+            if (!guild) return;
+
+            const member = await guild.members.fetch(userId);
+            const targetVC = await guild.channels.fetch(TARGET_VOICE_CHANNEL_ID);
+
+            if (!targetVC || targetVC.type !== ChannelType.GuildVoice) {
+                await interaction.reply({
+                    content: '❌ 移動先のボイスチャンネルが見つかりません。',
+                    ephemeral: true
+                });
+                return;
+            }
+
+            // Check if user is still in voice channel
+            if (!member.voice.channel) {
+                await interaction.reply({
+                    content: '❌ ユーザーがボイスチャンネルにいません。',
+                    ephemeral: true
+                });
+                return;
+            }
+
+            // Move user to target VC
+            await member.voice.setChannel(targetVC);
+
+            await interaction.reply({
+                content: `✅ ${member} を ${targetVC} に移動しました。`,
+                ephemeral: true
+            });
+
+            // Update message
+            await interaction.message.edit({
+                content: interaction.message.content + `\n\n✅ **承認済み** - ${interaction.user} によって承認されました`,
+                components: []
+            });
+
+            // Notify user
+            try {
+                await member.send(`✅ 通話参加が承認されました！${targetVC.name} に移動しました。`);
+            } catch (e) {
+                console.log('Could not DM user');
+            }
+
+        } catch (error) {
+            console.error('Error moving user:', error);
+            await interaction.reply({
+                content: '❌ ユーザーの移動に失敗しました。',
+                ephemeral: true
+            });
+        }
+        
+        return;
+    }
+
+    // Deny join button
+    if (interaction.isButton() && interaction.customId.startsWith('deny_join_')) {
+        const ADMIN_USER_ID = ''; // Same as in join.mts
+        
+        if (ADMIN_USER_ID && interaction.user.id !== ADMIN_USER_ID) {
+            await interaction.reply({
+                content: '❌ このボタンは管理者のみが使用できます。',
+                ephemeral: true
+            });
+            return;
+        }
+
+        const userId = interaction.customId.replace('deny_join_', '');
+
+        try {
+            await interaction.reply({
+                content: '❌ リクエストを拒否しました。',
+                ephemeral: true
+            });
+
+            await interaction.message.edit({
+                content: interaction.message.content + `\n\n❌ **拒否されました** - ${interaction.user} によって拒否されました`,
+                components: []
+            });
+
+            // Notify user
+            const guild = interaction.guild;
+            if (guild) {
+                const member = await guild.members.fetch(userId);
+                try {
+                    await member.send('❌ 通話参加リクエストが拒否されました。');
+                } catch (e) {
+                    console.log('Could not DM user');
+                }
+            }
+        } catch (error) {
+            console.error('Error denying request:', error);
+        }
+        
+        return;
+    }
+
     // ボタンが押されたとき
     if (interaction.isButton() && interaction.customId === 'open_translator_modal') {
         const modal = new ModalBuilder()

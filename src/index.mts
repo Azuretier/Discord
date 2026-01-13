@@ -17,6 +17,11 @@ const client = new Client({
     ],
 }) as ExtendedClient;
 
+const ROLE_IDS = {
+  EN: '1457198048697647145',
+  JP: '1457198172882337862'
+};
+
 client.commands = new Collection();
 const commands = [];
 // Grab all the command files from the commands directory you created earlier
@@ -83,5 +88,32 @@ client.on(Events.InteractionCreate, async (interaction: Interaction) => {
     }
 });
 
+async function assignRole(userId: string, roleType: 'EN' | 'JP') {
+  try {
+    const guild = await client.guilds.fetch(config.AZURET_GUILD_ID);
+    const member = await guild.members.fetch(userId);
+    const roleId = ROLE_IDS[roleType];
+    
+    if (!roleId) throw new Error('Invalid role type');
+    
+    // Remove opposite role first (optional - ensures only one)
+    const oppositeRole = roleType === 'EN' ? 'JP' : 'EN';
+    const oppositeRoleId = ROLE_IDS[oppositeRole];
+    
+    if (member.roles.cache.has(oppositeRoleId)) {
+      await member.roles.remove(oppositeRoleId);
+    }
+    
+    // Add selected role
+    await member.roles.add(roleId);
+    
+    return { success: true, role: roleType };
+  } catch (error) {
+    console.error('Role assignment failed:', error);
+    return { success: false, error: error instanceof Error ? error.message : String(error) };
+  }
+}
 // ログイン
 client.login(config.DISCORD_TOKEN);
+
+export {assignRole, client};
