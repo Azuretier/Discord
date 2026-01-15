@@ -6,11 +6,11 @@
     // File Layout
     "rootDir": "./src",
     "outDir": "./dist",
-    "moduleResolution": "bundler",
+    "moduleResolution": "node16",
 
     // Environment Settings
     // See also https://aka.ms/tsconfig/module
-    "module": "esnext",
+    "module": "node16",
     "target": "esnext",
     "types": ["node"],
 
@@ -34,12 +34,9 @@
     // Recommended Options
     "strict": true,
     "jsx": "react-jsx",
-    "verbatimModuleSyntax": false,
     "isolatedModules": true,
-    "noUncheckedSideEffectImports": false,
     "moduleDetection": "force",
     "skipLibCheck": true,
-    "allowImportingTsExtensions": false,
     "esModuleInterop": true,
     "allowSyntheticDefaultImports": true
   }
