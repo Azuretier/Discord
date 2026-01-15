@@ -38,7 +38,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
 	const color = interaction.options.getString('color') || 'Blue';
 
 	// Verify the channel is a text-based channel
-	if (!channel.isTextBased()) {
+	if (!('send' in channel)) {
 		await interaction.reply({ 
 			content: 'The selected channel must be a text channel!', 
 			ephemeral: true 

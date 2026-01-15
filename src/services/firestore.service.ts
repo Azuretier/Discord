@@ -18,7 +18,7 @@ function getAdminApp(): App {
   }
 
   const apps = getApps();
-  if (apps.length > 0) {
+  if (apps.length > 0 && apps[0]) {
     adminApp = apps[0];
     return adminApp;
   }
