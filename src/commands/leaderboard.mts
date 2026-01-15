@@ -1,6 +1,6 @@
 import { SlashCommandBuilder, EmbedBuilder, type ChatInputCommandInteraction } from 'discord.js';
-import { xpService } from '../services/xp.service.js';
-import { getRankEmoji } from '../utils/xp.js';
+import { xpService } from '../services/xp.service.mjs';
+import { getRankEmoji } from '../utils/xp.mjs';
 
 export const data = new SlashCommandBuilder()
   .setName('leaderboard')

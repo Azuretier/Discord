@@ -1,5 +1,5 @@
 import { SlashCommandBuilder, EmbedBuilder, type ChatInputCommandInteraction } from 'discord.js';
-import { discordFirestoreAdmin } from '../services/firestore.service.js';
+import { discordFirestoreAdmin } from '../services/firestore.service.mjs';
 
 export const data = new SlashCommandBuilder()
   .setName('roles')

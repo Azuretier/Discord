@@ -1,6 +1,6 @@
 import { SlashCommandBuilder, EmbedBuilder, type ChatInputCommandInteraction } from 'discord.js';
-import { discordFirestoreAdmin } from '../services/firestore.service.js';
-import { xpProgress, getRankEmoji } from '../utils/xp.js';
+import { discordFirestoreAdmin } from '../services/firestore.service.mjs';
+import { xpProgress, getRankEmoji } from '../utils/xp.mjs';
 
 export const data = new SlashCommandBuilder()
   .setName('profile')

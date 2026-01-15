@@ -14,13 +14,13 @@
   "license": "MIT",
   "author": "Azuret",
   "type": "module",
-  "main": "index.js",
+  "main": "index.mts",
   "engines": {
     "node": ">=20"
   },
   "scripts": {
     "build": "tsc",
-    "start": "node dist/index.mjs",
+    "start": "node src/index.mts",
     "dev": "npx tsx watch src/index.mts"
   },
   "dependencies": {

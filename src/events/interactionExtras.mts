@@ -9,7 +9,7 @@ import {
   type Interaction,
   type RepliableInteraction,
 } from 'discord.js';
-import { dbService } from '../lib/db-service.js';
+import { dbService } from '../lib/db-service.mjs';
 
 type ReplyOptions = Parameters<RepliableInteraction['reply']>[0];
 

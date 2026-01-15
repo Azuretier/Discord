@@ -1,5 +1,5 @@
 import { Events, type GuildMember } from 'discord.js';
-import { Logger } from '../utils/logger.js';
+import { Logger } from '../utils/logger.mjs';
 
 const logger = new Logger('GuildMemberAdd');
 

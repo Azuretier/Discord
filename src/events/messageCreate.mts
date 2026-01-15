@@ -1,5 +1,5 @@
 import { Message } from 'discord.js';
-import { dbService } from '../lib/db-service.js';
+import { dbService } from '../lib/db-service.mjs';
 
 const cooldowns = new Set<string>();
 

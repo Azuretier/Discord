@@ -1,5 +1,5 @@
-import type { UserProfile } from '../types/index.js';
-import { Logger } from '../utils/logger.js';
+import type { UserProfile } from '../types/index.mjs';
+import { Logger } from '../utils/logger.mjs';
 
 const logger = new Logger('KVService');
 

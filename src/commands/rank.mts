@@ -1,6 +1,6 @@
 import type { ChatInputCommandInteraction } from 'discord.js';
 import { EmbedBuilder, SlashCommandBuilder } from 'discord.js';
-import { dbService } from '../lib/db-service.js';
+import { dbService } from '../lib/db-service.mjs';
 
 export const data = new SlashCommandBuilder().setName('rank').setDescription('ランクを表示します');
 export async function execute(interaction: ChatInputCommandInteraction) {

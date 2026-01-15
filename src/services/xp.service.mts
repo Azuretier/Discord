@@ -1,7 +1,7 @@
-import type { UserProfile } from '../types/index.js';
-import { calculateLevel, getRankForLevel } from '../utils/xp.js';
-import { discordFirestoreAdmin } from './firestore.service.js';
-import { Logger } from '../utils/logger.js';
+import type { UserProfile } from '../types/index.mjs';
+import { calculateLevel, getRankForLevel } from '../utils/xp.mjs';
+import { discordFirestoreAdmin } from './firestore.service.mjs';
+import { Logger } from '../utils/logger.mjs';
 
 const logger = new Logger('XPService');
 

@@ -1,6 +1,6 @@
 import { Events, type Message } from 'discord.js';
-import { xpService } from '../services/xp.service.js';
-import { Logger } from '../utils/logger.js';
+import { xpService } from '../services/xp.service.mjs';
+import { Logger } from '../utils/logger.mjs';
 
 const logger = new Logger('MessageCreate');
 

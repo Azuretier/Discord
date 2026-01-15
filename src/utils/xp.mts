@@ -1,4 +1,4 @@
-import type { RankTier } from '../types/index.js';
+import type { RankTier } from '../types/index.mjs';
 
 export function calculateLevel(xp: number): number {
   return Math.floor(Math.sqrt(xp / 100));

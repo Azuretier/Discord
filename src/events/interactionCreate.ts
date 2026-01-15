@@ -1,5 +1,5 @@
 import { Events, type Interaction } from 'discord.js';
-import { Logger } from '../utils/logger.js';
+import { Logger } from '../utils/logger.mjs';
 import { handleInteractionExtras } from './interactionExtras.mjs';
 
 const logger = new Logger('InteractionCreate');

@@ -7,8 +7,8 @@ import {
   type ChatInputCommandInteraction,
   type ButtonInteraction
 } from 'discord.js';
-import { discordFirestoreAdmin } from '../services/firestore.service.js';
-import { Logger } from '../utils/logger.js';
+import { discordFirestoreAdmin } from '../services/firestore.service.mjs';
+import { Logger } from '../utils/logger.mjs';
 
 const logger = new Logger('RulesCommand');
 
