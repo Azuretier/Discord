@@ -134,7 +134,7 @@ export const LANGUAGES: Record<string, LanguageConfig> = {
       ruleProgress: '{current} ⋰ {total}',
       yesButton: 'はい',
       completed:
-        'ルールを読んでくれてありがとう♡ サーバーのぜんぶのチャンネルがみえるようになります🎉',
+        'ルールを読んでくれてありがとう♡ サーバーのすべてのチャンネルがみえるようになります🎉',
       alreadyCompleted:
         'ルールを読んでくれてありがとう♡',
       error: '❌ エラーが発生しました。もう一度お試しいただくか、管理者にお問い合わせください。',
@@ -171,7 +171,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
   );
 
   await interaction.reply({
-    content: 'サーバーへようこそ！ルールを読んでほしいです　⋰ Welcome to the server! Please read the rules.',
+    content: 'サーバーへようこそ！ルールを読んでほしいです\n-# Welcome to the server! Please read the rules.\n',
     components: [row],
   });
 }
@@ -267,26 +267,25 @@ export async function handleRulesAgree(interaction: ButtonInteraction): Promise<
   try {
     const member = await guild.members.fetch(interaction.user.id);
 
-    // Add verified role
-    if (ROLES_CONFIG.verifiedRoleId) {
-      if (!member.roles.cache.has(ROLES_CONFIG.verifiedRoleId)) {
-        await member.roles.add(ROLES_CONFIG.verifiedRoleId);
-        logger.info(`Added verified role to ${interaction.user.username}`);  
-      }
-    }
-
     if (member.roles.cache.has(ROLES_CONFIG.verifiedRoleId)) {
       await interaction.update({
         content: lang.messages.alreadyCompleted,
         embeds: [],
         components: [],
       });
-    }else {
-      await interaction.update({
-        content: lang.messages.completed,
-        embeds: [],
-        components: [],
-      })
+      return true;
+    }
+
+    await interaction.update({
+      content: lang.messages.completed,
+      embeds: [],
+      components: [],
+    })
+
+    // Add verified role
+    if (ROLES_CONFIG.verifiedRoleId) {
+      await member.roles.add(ROLES_CONFIG.verifiedRoleId);
+      logger.info(`Added verified role to ${interaction.user.username}`);  
     }
 
     logger.info(`User ${interaction.user.username} completed rules verification`);
