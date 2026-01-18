@@ -3,8 +3,12 @@ import { dbService } from '../lib/db-service.mjs';
 
 const cooldowns = new Set<string>();
 
+// Guild ID where XP is eligible
+const XP_ELIGIBLE_GUILD_ID = '1448441468657074229';
+
 export const handleExperience = async (message: Message) => {
     if (message.author.bot || !message.guild) return;
+    if (message.guild.id !== XP_ELIGIBLE_GUILD_ID) return;
     if (cooldowns.has(message.author.id)) return;
     
     // ランダムなXP付与 (15~25)
