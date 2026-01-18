@@ -40,10 +40,12 @@ export interface LanguageConfig {
 }
 
 export interface RolesConfig {
-  // Role ID given after completing all rules
+  // Role ID given after completing all rules (ルールを読んだえらい人)
   verifiedRoleId: string;
-  // Role ID to remove after verification (optional)
-  preVerifiedRoleId?: string;
+  // Role ID to remove after verification (Pre-Member role)
+  preMemberRoleId?: string;
+  // Role ID to add when removing pre-member (Member role)
+  memberRoleId?: string;
 }
 
 // Language configurations - Add new languages here
@@ -144,10 +146,12 @@ export const LANGUAGES: Record<string, LanguageConfig> = {
 
 // Role configuration - Update these IDs for your server
 export const ROLES_CONFIG: RolesConfig = {
-  // Role ID given after completing all rules (Verified/Member role)
+  // Role ID given after completing all rules (ルールを読んだえらい人)
   verifiedRoleId: '1461233507849474180',
-  // Role ID to remove after verification (optional - Pre-Member role)
-  preVerifiedRoleId: '',
+  // Role ID to remove after verification (Pre-Member role)
+  preMemberRoleId: '1462508873544892646',
+  // Role ID to add when removing pre-member (Member role)
+  memberRoleId: '1462510711820521503',
 };
 
 // Channel ID where the rules verification button will be posted
@@ -290,10 +294,21 @@ export async function handleRulesAgree(interaction: ButtonInteraction): Promise<
       components: [],
     })
 
-    // Add verified role
+    // Add verified role (ルールを読んだえらい人)
     if (ROLES_CONFIG.verifiedRoleId) {
       await member.roles.add(ROLES_CONFIG.verifiedRoleId);
-      logger.info(`Added verified role to ${interaction.user.username}`);  
+      logger.info(`Added verified role to ${interaction.user.username}`);
+    }
+
+    // If user has pre-member role, replace it with member role
+    if (ROLES_CONFIG.preMemberRoleId && member.roles.cache.has(ROLES_CONFIG.preMemberRoleId)) {
+      await member.roles.remove(ROLES_CONFIG.preMemberRoleId);
+      logger.info(`Removed pre-member role from ${interaction.user.username}`);
+      
+      if (ROLES_CONFIG.memberRoleId) {
+        await member.roles.add(ROLES_CONFIG.memberRoleId);
+        logger.info(`Added member role to ${interaction.user.username}`);
+      }
     }
 
     logger.info(`User ${interaction.user.username} completed rules verification`);

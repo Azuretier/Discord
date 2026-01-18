@@ -32,13 +32,6 @@ export default {
         logger.info(`Assigned Pre-Member role to ${member.user.username}`);
       }
 
-      const welcomeChannel = member.guild.systemChannel;
-      if (welcomeChannel) {
-        await welcomeChannel.send({
-          content: `Welcome ${member}! 👋\n\nPlease read and agree to our rules using the \`/rules\` command to gain full access to the server.`
-        });
-      }
-
     } catch (error) {
       logger.error('Error handling new member', error);
     }

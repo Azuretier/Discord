@@ -265,15 +265,6 @@ async function handleTranslatorSubmit(interaction: Interaction): Promise<boolean
   return true;
 }
 
-async function handleRulesAgree(interaction: Interaction): Promise<boolean> {
-  if (!interaction.isButton()) return false;
-  if (interaction.customId !== 'agree_rules') return false;
-
-  const { handleRulesAgreement } = await import('../commands/rules.mjs');
-  await handleRulesAgreement(interaction);
-  return true;
-}
-
 async function handleRulesVerificationInteraction(interaction: Interaction): Promise<boolean> {
   if (!interaction.isButton() && !interaction.isStringSelectMenu()) return false;
   return await handleRulesVerification(interaction);
@@ -285,7 +276,6 @@ export async function handleInteractionExtras(interaction: Interaction): Promise
     (await handleDenyJoinButton(interaction)) ||
     (await handleTranslatorOpenModal(interaction)) ||
     (await handleTranslatorSubmit(interaction)) ||
-    (await handleRulesAgree(interaction)) ||
     (await handleRulesVerificationInteraction(interaction))
   );
 }
