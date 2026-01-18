@@ -10,6 +10,7 @@ import {
   type RepliableInteraction,
 } from 'discord.js';
 import { dbService } from '../lib/db-service.mjs';
+import { handleRulesVerification } from '../commands/rules-verification.mjs';
 
 type ReplyOptions = Parameters<RepliableInteraction['reply']>[0];
 
@@ -273,12 +274,18 @@ async function handleRulesAgree(interaction: Interaction): Promise<boolean> {
   return true;
 }
 
+async function handleRulesVerificationInteraction(interaction: Interaction): Promise<boolean> {
+  if (!interaction.isButton() && !interaction.isStringSelectMenu()) return false;
+  return await handleRulesVerification(interaction);
+}
+
 export async function handleInteractionExtras(interaction: Interaction): Promise<boolean> {
   return (
     (await handleApproveJoinButton(interaction)) ||
     (await handleDenyJoinButton(interaction)) ||
     (await handleTranslatorOpenModal(interaction)) ||
     (await handleTranslatorSubmit(interaction)) ||
-    (await handleRulesAgree(interaction))
+    (await handleRulesAgree(interaction)) ||
+    (await handleRulesVerificationInteraction(interaction))
   );
 }

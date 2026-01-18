@@ -1,5 +1,6 @@
 import { Events, type Client } from 'discord.js';
 import { Logger } from '../utils/logger.mjs';
+import { registerRulesVerificationHandlers } from '../commands/rules-verification.mjs';
 
 const logger = new Logger('Ready');
 
@@ -11,5 +12,8 @@ export default {
     logger.info(`Serving ${client.guilds.cache.size} guild(s)`);
     
     client.user?.setActivity('Azure Community', { type: 3 });
+    
+    // Register rules verification handlers (ensures buttons work after bot restart)
+    registerRulesVerificationHandlers(client);
   }
 };
