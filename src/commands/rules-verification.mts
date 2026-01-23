@@ -42,6 +42,8 @@ export interface LanguageConfig {
     followUp: string;
     modalTitle: string;
     modalPlaceholder: string;
+    showFollowUpButton: string;
+    skipFollowUpButton: string;
     error: string;
   };
 }
@@ -104,6 +106,8 @@ export const LANGUAGES: Record<string, LanguageConfig> = {
         '💬 Feel free to introduce yourself or say hello in the chat!',
       modalTitle: 'Welcome Message',
       modalPlaceholder: 'If you have something to say, write it in this box!',
+      showFollowUpButton: '💬 Send a message',
+      skipFollowUpButton: '❌ Close',
       error: '❌ An error occurred. Please try again or contact an administrator.',
     },
   },
@@ -149,11 +153,13 @@ export const LANGUAGES: Record<string, LanguageConfig> = {
       completed:
         'ルールを読んでくれてありがとう♡ <@&1462510711820521503> と <@&1461233507849474180> ロールを付与したよ！！ サーバーへようこそ！🎉',
       alreadyCompleted:
-        'ルールを読んでくれてありがとう♡',
+        'ルールを読み直してくれてありがとう♡',
       followUp:
         '💬 自己紹介したり、チャットで挨拶してみてね！。楽しい時間を過ごしてくださいね♡',
       modalTitle: 'ウェルカムメッセージ',
       modalPlaceholder: '何か伝えたいことがあったら、このボックスに書いてね！',
+      showFollowUpButton: '💬 メッセージを送る',
+      skipFollowUpButton: '❌ 閉じる',
       error: '❌ エラーが発生しました。もう一度お試しいただくか、管理者にお問い合わせください。',
     },
   },
@@ -297,7 +303,18 @@ export async function handleRulesAgree(interaction: ButtonInteraction): Promise<
       await interaction.update({
         content: lang.messages.alreadyCompleted,
         embeds: [],
-        components: [],
+        components: [
+          new ActionRowBuilder<ButtonBuilder>().addComponents(
+            new ButtonBuilder()
+              .setCustomId(`rules_show_followup_${lang.code}`)
+              .setLabel(lang.messages.showFollowUpButton)
+              .setStyle(ButtonStyle.Primary),
+            new ButtonBuilder()
+              .setCustomId(`rules_skip_followup_${lang.code}`)
+              .setLabel(lang.messages.skipFollowUpButton)
+              .setStyle(ButtonStyle.Secondary)
+          ),
+        ],
       });
       return true;
     }
@@ -410,6 +427,8 @@ export async function handleRulesVerification(
     return (
       (await handleRulesStart(interaction)) ||
       (await handleRulesAgree(interaction)) ||
+      (await handleShowFollowUp(interaction)) ||
+      (await handleSkipFollowUp(interaction)) ||
       (await handleModalOpen(interaction))
     );
   }
@@ -423,6 +442,53 @@ export async function handleRulesVerification(
   }
 
   return false;
+}
+
+/**
+ * Handle show follow-up button click (for alreadyCompleted users)
+ */
+export async function handleShowFollowUp(interaction: ButtonInteraction): Promise<boolean> {
+  if (!interaction.customId.startsWith('rules_show_followup_')) return false;
+
+  const langCode = interaction.customId.split('_')[3];
+  const lang = LANGUAGES[langCode || 'ja'];
+  if (!lang) return true;
+
+  // Update message and show the modal button
+  await interaction.update({
+    content: lang.messages.followUp,
+    embeds: [],
+    components: [
+      new ActionRowBuilder<ButtonBuilder>().addComponents(
+        new ButtonBuilder()
+          .setCustomId(`rules_modal_${lang.code}`)
+          .setLabel('💬 メッセージを送る / Send a message')
+          .setStyle(ButtonStyle.Secondary)
+      ),
+    ],
+  });
+
+  return true;
+}
+
+/**
+ * Handle skip follow-up button click (for alreadyCompleted users)
+ */
+export async function handleSkipFollowUp(interaction: ButtonInteraction): Promise<boolean> {
+  if (!interaction.customId.startsWith('rules_skip_followup_')) return false;
+
+  const langCode = interaction.customId.split('_')[3];
+  const lang = LANGUAGES[langCode || 'ja'];
+  if (!lang) return true;
+
+  // Just close the message
+  await interaction.update({
+    content: lang.messages.alreadyCompleted,
+    embeds: [],
+    components: [],
+  });
+
+  return true;
 }
 
 /**
