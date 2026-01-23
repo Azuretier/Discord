@@ -266,7 +266,7 @@ async function handleTranslatorSubmit(interaction: Interaction): Promise<boolean
 }
 
 async function handleRulesVerificationInteraction(interaction: Interaction): Promise<boolean> {
-  if (!interaction.isButton() && !interaction.isStringSelectMenu()) return false;
+  if (!interaction.isButton() && !interaction.isStringSelectMenu() && !interaction.isModalSubmit()) return false;
   return await handleRulesVerification(interaction);
 }
 

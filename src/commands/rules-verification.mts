@@ -6,9 +6,13 @@ import {
   ButtonStyle,
   StringSelectMenuBuilder,
   StringSelectMenuOptionBuilder,
+  ModalBuilder,
+  TextInputBuilder,
+  TextInputStyle,
   type ChatInputCommandInteraction,
   type ButtonInteraction,
   type StringSelectMenuInteraction,
+  type ModalSubmitInteraction,
   type Client,
   type TextChannel,
   PermissionFlagsBits,
@@ -36,6 +40,8 @@ export interface LanguageConfig {
     completed: string;
     alreadyCompleted: string;
     followUp: string;
+    modalTitle: string;
+    modalPlaceholder: string;
     error: string;
   };
 }
@@ -96,6 +102,8 @@ export const LANGUAGES: Record<string, LanguageConfig> = {
         'Thank you for reading the rules! <3',
       followUp:
         '💬 Feel free to introduce yourself or say hello in the chat!',
+      modalTitle: 'Welcome Message',
+      modalPlaceholder: 'If you have something to say, write it in this box!',
       error: '❌ An error occurred. Please try again or contact an administrator.',
     },
   },
@@ -144,6 +152,8 @@ export const LANGUAGES: Record<string, LanguageConfig> = {
         'ルールを読んでくれてありがとう♡',
       followUp:
         '💬 自己紹介したり、チャットで挨拶してみてね！。楽しい時間を過ごしてくださいね♡',
+      modalTitle: 'ウェルカムメッセージ',
+      modalPlaceholder: '何か伝えたいことがあったら、このボックスに書いてね！',
       error: '❌ エラーが発生しました。もう一度お試しいただくか、管理者にお問い合わせください。',
     },
   },
@@ -318,11 +328,20 @@ export async function handleRulesAgree(interaction: ButtonInteraction): Promise<
 
     logger.info(`User ${interaction.user.username} completed rules verification`);
 
-    // After a delay, send a follow-up message
+    // After a delay, show a modal for the user to send a message
     setTimeout(async () => {
       try {
+        // Send a button to open the modal (since we can't show modal after update)
         await interaction.followUp({
           content: lang.messages.followUp,
+          components: [
+            new ActionRowBuilder<ButtonBuilder>().addComponents(
+              new ButtonBuilder()
+                .setCustomId(`rules_modal_${lang.code}`)
+                .setLabel('💬 メッセージを送る / Send a message')
+                .setStyle(ButtonStyle.Secondary)
+            ),
+          ],
           ephemeral: true,
         });
       } catch (err) {
@@ -385,12 +404,13 @@ async function showRule(
 // ============================================================================
 
 export async function handleRulesVerification(
-  interaction: ButtonInteraction | StringSelectMenuInteraction
+  interaction: ButtonInteraction | StringSelectMenuInteraction | ModalSubmitInteraction
 ): Promise<boolean> {
   if (interaction.isButton()) {
     return (
       (await handleRulesStart(interaction)) ||
-      (await handleRulesAgree(interaction))
+      (await handleRulesAgree(interaction)) ||
+      (await handleModalOpen(interaction))
     );
   }
 
@@ -398,7 +418,67 @@ export async function handleRulesVerification(
     return await handleLanguageSelect(interaction);
   }
 
+  if (interaction.isModalSubmit()) {
+    return await handleModalSubmit(interaction);
+  }
+
   return false;
+}
+
+/**
+ * Handle modal open button click
+ */
+export async function handleModalOpen(interaction: ButtonInteraction): Promise<boolean> {
+  if (!interaction.customId.startsWith('rules_modal_')) return false;
+
+  const langCode = interaction.customId.split('_')[2];
+  const lang = LANGUAGES[langCode || 'ja'];
+  if (!lang) return true;
+
+  const modal = new ModalBuilder()
+    .setCustomId(`rules_welcome_modal_${lang.code}`)
+    .setTitle(lang.messages.modalTitle);
+
+  const messageInput = new TextInputBuilder()
+    .setCustomId('welcome_message')
+    .setLabel(lang.messages.modalPlaceholder)
+    .setStyle(TextInputStyle.Paragraph)
+    .setRequired(false)
+    .setMaxLength(1000);
+
+  const actionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(messageInput);
+  modal.addComponents(actionRow);
+
+  await interaction.showModal(modal);
+  return true;
+}
+
+/**
+ * Handle modal submission
+ */
+export async function handleModalSubmit(interaction: ModalSubmitInteraction): Promise<boolean> {
+  if (!interaction.customId.startsWith('rules_welcome_modal_')) return false;
+
+  const langCode = interaction.customId.split('_')[3];
+  const lang = LANGUAGES[langCode || 'ja'];
+  if (!lang) return true;
+
+  const message = interaction.fields.getTextInputValue('welcome_message');
+
+  if (message && message.trim()) {
+    await interaction.reply({
+      content: `✨ ${interaction.user} からのメッセージ:\n${message}`,
+      ephemeral: false,
+    });
+    logger.info(`User ${interaction.user.username} sent welcome message: ${message}`);
+  } else {
+    await interaction.reply({
+      content: '👋 ようこそ！ / Welcome!',
+      ephemeral: true,
+    });
+  }
+
+  return true;
 }
 
 // ============================================================================
