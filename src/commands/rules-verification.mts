@@ -35,6 +35,7 @@ export interface LanguageConfig {
     yesButton: string;
     completed: string;
     alreadyCompleted: string;
+    followUp: string;
     error: string;
   };
 }
@@ -93,6 +94,8 @@ export const LANGUAGES: Record<string, LanguageConfig> = {
         'Thank you for reading all the rules! <3 You now have full access to the server. Welcome! 🎉',
       alreadyCompleted:
         'Thank you for reading the rules! <3',
+      followUp:
+        '💬 Feel free to introduce yourself or say hello in the chat!',
       error: '❌ An error occurred. Please try again or contact an administrator.',
     },
   },
@@ -105,19 +108,19 @@ export const LANGUAGES: Record<string, LanguageConfig> = {
         title: 'じぶんとたにんも、たいせつにしましょう'
       },
       {
-        title: 'スパムはやめてください。'
+        title: 'スパムはしないで、ください'
       },
       {
-        title: 'たにんをこまらせるこういはやめてください'
+        title: 'ほかの人をこまらせないでね'
       },
       {
-        title: 'レイプはきんしです',
+        title: '人を傷つけたらダメです。',
       },
       {
-        title: 'けんかはOK'
+        title: 'けんかはしてもいいけど、仲直りする前提としてやってください。'
       },
       {
-        title: '個人情報さらすのは禁止'
+        title: '個人情報の扱いを大切にしましょう! (他人の個人情報をばらさないでください)'
       },
       {
         title: 'Discordの利用規約を守ってください。'
@@ -126,19 +129,21 @@ export const LANGUAGES: Record<string, LanguageConfig> = {
         title: 'なにかあったら、すぐにモデレーターにしらせてください。',
       },
       {
-        title: 'このサーバーはみんながたのしめることがもくひょうです',
+        title: '愛を持って優しく接しましょう！みんなが楽しめるサーバーを目指しています。',
       },
       {
-        title: 'あいをもってせっしましょう'
+        title: '以上です〇m(_ _ )m みんなで楽しいサーバーにしていきましょう♡'
       }
     ],
     messages: {
       ruleProgress: '{current} ⋰ {total}',
       yesButton: 'はい',
       completed:
-        'ルールを読んでくれてありがとう♡ サーバーのすべてのチャンネルがみえるようになります🎉',
+        'ルールを読んでくれてありがとう♡ <@1462510711820521503> と <@1461233507849474180> ロールを付与したよ！！ サーバーへようこそ！🎉',
       alreadyCompleted:
         'ルールを読んでくれてありがとう♡',
+      followUp:
+        '💬 自己紹介したり、チャットで挨拶してみてね！。楽しい時間を過ごしてくださいね♡',
       error: '❌ エラーが発生しました。もう一度お試しいただくか、管理者にお問い合わせください。',
     },
   },
@@ -170,7 +175,7 @@ export async function execute(interaction: ChatInputCommandInteraction) {
   const row = new ActionRowBuilder<ButtonBuilder>().addComponents(
     new ButtonBuilder()
       .setCustomId('rules_start')
-      .setLabel('📋 ルールを読む　⋰　ᴿᴱᴬᴰ ᵀᴴᴱ ᴿᵁᴸᴱ')
+      .setLabel('📋 ルールを読んでください ⋰ Read rules.')
       .setStyle(ButtonStyle.Primary)
   );
 
@@ -181,7 +186,6 @@ export async function execute(interaction: ChatInputCommandInteraction) {
   }
 
   await channel.send({
-    content: 'サーバーへようこそ！ルールを読んでほしいです\n-# Welcome to the server! Please read the rules.\n',
     components: [row],
   });
 
@@ -204,7 +208,7 @@ export async function handleRulesStart(interaction: ButtonInteraction): Promise<
   // Show language selection
   const selectMenu = new StringSelectMenuBuilder()
     .setCustomId('rules_language_select')
-    .setPlaceholder('言語を選択　⋰　Select Language')
+    .setPlaceholder('言語を選択してください　⋰　Select Language please.')
     .addOptions(
       Object.values(LANGUAGES).map((lang) =>
         new StringSelectMenuOptionBuilder()
@@ -288,11 +292,12 @@ export async function handleRulesAgree(interaction: ButtonInteraction): Promise<
       return true;
     }
 
+    // First, send the completion message
     await interaction.update({
       content: lang.messages.completed,
       embeds: [],
       components: [],
-    })
+    });
 
     // Add verified role (ルールを読んだえらい人)
     if (ROLES_CONFIG.verifiedRoleId) {
@@ -312,6 +317,18 @@ export async function handleRulesAgree(interaction: ButtonInteraction): Promise<
     }
 
     logger.info(`User ${interaction.user.username} completed rules verification`);
+
+    // After a delay, send a follow-up message
+    setTimeout(async () => {
+      try {
+        await interaction.followUp({
+          content: lang.messages.followUp,
+          ephemeral: true,
+        });
+      } catch (err) {
+        logger.error('Error sending follow-up message', err);
+      }
+    }, 3000); // 3 seconds delay
   } catch (error) {
     logger.error('Error completing rules verification', error);
     await interaction.reply({
