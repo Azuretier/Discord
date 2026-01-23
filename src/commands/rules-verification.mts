@@ -424,13 +424,18 @@ export async function handleRulesVerification(
   interaction: ButtonInteraction | StringSelectMenuInteraction | ModalSubmitInteraction
 ): Promise<boolean> {
   if (interaction.isButton()) {
-    return (
+    logger.info(`Button clicked: ${interaction.customId}`);
+    const result = (
       (await handleRulesStart(interaction)) ||
       (await handleRulesAgree(interaction)) ||
       (await handleShowFollowUp(interaction)) ||
       (await handleSkipFollowUp(interaction)) ||
       (await handleModalOpen(interaction))
     );
+    if (!result) {
+      logger.warn(`Unhandled button: ${interaction.customId}`);
+    }
+    return result;
   }
 
   if (interaction.isStringSelectMenu()) {
@@ -438,6 +443,7 @@ export async function handleRulesVerification(
   }
 
   if (interaction.isModalSubmit()) {
+    logger.info(`Modal submitted: ${interaction.customId}`);
     return await handleModalSubmit(interaction);
   }
 
@@ -454,19 +460,23 @@ export async function handleShowFollowUp(interaction: ButtonInteraction): Promis
   const lang = LANGUAGES[langCode || 'ja'];
   if (!lang) return true;
 
-  // Update message and show the modal button
-  await interaction.update({
-    content: lang.messages.followUp,
-    embeds: [],
-    components: [
-      new ActionRowBuilder<ButtonBuilder>().addComponents(
-        new ButtonBuilder()
-          .setCustomId(`rules_modal_${lang.code}`)
-          .setLabel('💬 メッセージを送る / Send a message')
-          .setStyle(ButtonStyle.Secondary)
-      ),
-    ],
-  });
+  try {
+    // Update message and show the modal button
+    await interaction.update({
+      content: lang.messages.followUp,
+      embeds: [],
+      components: [
+        new ActionRowBuilder<ButtonBuilder>().addComponents(
+          new ButtonBuilder()
+            .setCustomId(`rules_modal_${lang.code}`)
+            .setLabel('💬 メッセージを送る / Send a message')
+            .setStyle(ButtonStyle.Secondary)
+        ),
+      ],
+    });
+  } catch (error) {
+    logger.error('Error in handleShowFollowUp', error);
+  }
 
   return true;
 }
@@ -481,12 +491,16 @@ export async function handleSkipFollowUp(interaction: ButtonInteraction): Promis
   const lang = LANGUAGES[langCode || 'ja'];
   if (!lang) return true;
 
-  // Just close the message
-  await interaction.update({
-    content: lang.messages.alreadyCompleted,
-    embeds: [],
-    components: [],
-  });
+  try {
+    // Just close the message
+    await interaction.update({
+      content: lang.messages.alreadyCompleted,
+      embeds: [],
+      components: [],
+    });
+  } catch (error) {
+    logger.error('Error in handleSkipFollowUp', error);
+  }
 
   return true;
 }
@@ -501,21 +515,26 @@ export async function handleModalOpen(interaction: ButtonInteraction): Promise<b
   const lang = LANGUAGES[langCode || 'ja'];
   if (!lang) return true;
 
-  const modal = new ModalBuilder()
-    .setCustomId(`rules_welcome_modal_${lang.code}`)
-    .setTitle(lang.messages.modalTitle);
+  try {
+    const modal = new ModalBuilder()
+      .setCustomId(`rules_welcome_modal_${lang.code}`)
+      .setTitle(lang.messages.modalTitle);
 
-  const messageInput = new TextInputBuilder()
-    .setCustomId('welcome_message')
-    .setLabel(lang.messages.modalPlaceholder)
-    .setStyle(TextInputStyle.Paragraph)
-    .setRequired(false)
-    .setMaxLength(1000);
+    const messageInput = new TextInputBuilder()
+      .setCustomId('welcome_message')
+      .setLabel(lang.messages.modalPlaceholder)
+      .setStyle(TextInputStyle.Paragraph)
+      .setRequired(false)
+      .setMaxLength(1000);
 
-  const actionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(messageInput);
-  modal.addComponents(actionRow);
+    const actionRow = new ActionRowBuilder<TextInputBuilder>().addComponents(messageInput);
+    modal.addComponents(actionRow);
 
-  await interaction.showModal(modal);
+    await interaction.showModal(modal);
+  } catch (error) {
+    logger.error('Error in handleModalOpen', error);
+  }
+
   return true;
 }
 
@@ -529,19 +548,23 @@ export async function handleModalSubmit(interaction: ModalSubmitInteraction): Pr
   const lang = LANGUAGES[langCode || 'ja'];
   if (!lang) return true;
 
-  const message = interaction.fields.getTextInputValue('welcome_message');
+  try {
+    const message = interaction.fields.getTextInputValue('welcome_message');
 
-  if (message && message.trim()) {
-    await interaction.reply({
-      content: `✨ ${interaction.user} からのメッセージ:\n${message}`,
-      ephemeral: false,
-    });
-    logger.info(`User ${interaction.user.username} sent welcome message: ${message}`);
-  } else {
-    await interaction.reply({
-      content: '👋 ようこそ！ / Welcome!',
-      ephemeral: true,
-    });
+    if (message && message.trim()) {
+      await interaction.reply({
+        content: `✨ ${interaction.user} からのメッセージ:\n${message}`,
+        ephemeral: false,
+      });
+      logger.info(`User ${interaction.user.username} sent welcome message: ${message}`);
+    } else {
+      await interaction.reply({
+        content: '👋 ようこそ！ / Welcome!',
+        ephemeral: true,
+      });
+    }
+  } catch (error) {
+    logger.error('Error in handleModalSubmit', error);
   }
 
   return true;
